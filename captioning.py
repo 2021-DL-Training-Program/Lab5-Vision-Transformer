@@ -7,13 +7,12 @@ import torch.nn as nn
 import numpy as np
 import math
 from transformers import ViTModel
-from loader import get_loader
+from dataloader import get_loader
 from torchvision import transforms
 import pickle
 from build_vocab import Vocabulary
 from tqdm import tqdm
 import argparse
-
 
 class Encoder(nn.Module):
     def __init__(self):
@@ -234,7 +233,7 @@ class DecoderLayer(nn.Module):
         
         return trg, attention
 
-class Seq2Seq(nn.Module):
+class Img2Seq(nn.Module):
     def __init__(self, encoder, decoder, trg_pad_idx, device):
         super().__init__()
         
@@ -295,7 +294,7 @@ class Seq2Seq(nn.Module):
         
         return output, attention
 
-def train(model, iterator, optimizer, criterion, clip):
+def train(model, iterator, optimizer, criterion, clip, log_step=10):
     
     model.train()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') 
@@ -313,16 +312,10 @@ def train(model, iterator, optimizer, criterion, clip):
         
         output, _ = model(src, trg[:,:-1])
 
-        #output = [batch size, trg len - 1, output dim]
-        #trg = [batch size, trg len]
-
         output_dim = output.shape[-1]
             
         output = output.contiguous().view(-1, output_dim)
         trg = trg[:,1:].contiguous().view(-1)
-                
-        #output = [batch size * trg len - 1, output dim]
-        #trg = [batch size * trg len - 1]
         
         loss = criterion(output, trg)
         
@@ -334,19 +327,20 @@ def train(model, iterator, optimizer, criterion, clip):
         
         epoch_loss += loss.item()
         
-        if i % 10 == 0 and i != 0:
-            p_bar.set_description(f'STEP {i} | Loss {epoch_loss/i}')
+        if i+1 % log_step == 0:
+            p_bar.set_description(f'STEP {i+1} | Loss: {(epoch_loss/(i+1)):.3f} | Train PPL: {math.exp(epoch_loss/(i+1)):7.3f}')
         
     return epoch_loss / len(iterator)
 
-def epoch_time(start_time, end_time):
-    elapsed_time = end_time - start_time
-    elapsed_mins = int(elapsed_time / 60)
-    elapsed_secs = int(elapsed_time - (elapsed_mins * 60))
-    return elapsed_mins, elapsed_secs
-
 def inference(src, tgt, model, device, vocab, max_len = 100):
     
+    '''
+    src: single image from dataloader
+    tgt: single sequence of word_id from dataloader
+    model: Img2Seq model
+    max_len: max length of decoded sentence (int)
+    '''
+
     model.eval()
     
     gold = tgt.tolist()
@@ -393,12 +387,12 @@ def main(args):
     with open('data/vocab.pkl', 'rb') as f:
         vocab = pickle.load(f)
 
-    train_loader = get_loader('data/resized2014', 'data/annotations/captions_train2014.json', vocab, transform, args.batch_size, shuffle=True, num_workers=2)
+    train_loader = get_loader(args.image_dir, args.caption_path, vocab, transform, args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     print('vocab size',len(vocab))
     enc = Encoder()
     dec = Decoder(len(vocab), args.hidden_size, args.dec_layers, args.num_heads, args.hidden_size, args.dropout, device)
-    model = Seq2Seq(enc, dec, vocab.word2idx['<pad>'], 'cuda')
+    model = Img2Seq(enc, dec, vocab.word2idx['<pad>'], 'cuda')
 
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -415,6 +409,10 @@ def main(args):
         torch.save(model.state_dict(), f'{args.model_path}/ViT_captioning_epoch{epoch}.pt')
         print(f'EPOCH {epoch}\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
 
+    # inference_loader = get_loader(args.image_dir, args.caption_path, vocab, transform, 1, shuffle=True, num_workers=args.num_workers)
+    # for img, tgt in inference_loader:
+    #     inference(img, tgt, model, device, vocab, args.max_len)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_path', type=str, default='models/' , help='path for saving trained models')
@@ -424,7 +422,8 @@ if __name__ == '__main__':
     parser.add_argument('--caption_path', type=str, default='data/annotations/captions_train2014.json', help='path for train annotation json file')
     parser.add_argument('--log_step', type=int , default=10, help='step size for prining log info')
     parser.add_argument('--dropout', type=float, default=0.1)
-    
+    parser.add_argument('--max_len', type=int, default=100)
+
     # Model parameters
     parser.add_argument('--hidden_size', type=int , default=768, help='dimension of lstm hidden states')
     parser.add_argument('--dec_layers', type=int , default=6, help='number of decoder layers in transformer')

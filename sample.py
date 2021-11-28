@@ -1,5 +1,5 @@
 from PIL import Image
-from captioning import Seq2Seq, Encoder, Decoder, inference
+from captioning import Img2Seq, Encoder, Decoder, inference
 import matplotlib.pyplot as plt
 from torchvision import transforms
 import numpy as np
@@ -11,7 +11,7 @@ from build_vocab import Vocabulary
 def plot_attention(image, result, attention_plot):
     
     result = result[1:]
-    print(result)
+    print('generated caption',result)
     temp_image = image
     attention_plot = attention_plot.squeeze(0).transpose(0,1).cpu().numpy()
     fig = plt.figure(figsize=(15, 15))
@@ -51,7 +51,7 @@ def main(args):
 
     enc = Encoder()
     dec = Decoder(len(vocab), args.hidden_size, args.dec_layers, args.num_heads, args.hidden_size, args.dropout, device)
-    model = Seq2Seq(enc, dec, vocab.word2idx['<pad>'], 'cuda')
+    model = Img2Seq(enc, dec, vocab.word2idx['<pad>'], 'cuda')
     model.load_state_dict(torch.load(args.model_path))
     src, raw_image = sample_image(args.image_path)
 
@@ -61,7 +61,7 @@ def main(args):
     src_mask = model.make_src_mask(enc_src)
     trg_indexes = [vocab.word2idx['<start>']]
 
-    for i in range(100):
+    for i in range(args.max_len):
 
         trg_tensor = torch.LongTensor(trg_indexes).unsqueeze(0).to(device)
         trg_mask = model.make_trg_mask(trg_tensor)
@@ -77,6 +77,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    
     parser.add_argument('--image_path', type=str, default='./data/train2014/COCO_train2014_000000581921.jpg')
     parser.add_argument('--model_path', type=str, default='models/ViT_captioning_epoch4.pt' , help='path for saving trained models')
     parser.add_argument('--crop_size', type=int, default=224 , help='size for randomly cropping images')
@@ -84,6 +85,7 @@ if __name__ == '__main__':
     parser.add_argument('--image_dir', type=str, default='data/resized2014', help='directory for resized images')
     parser.add_argument('--caption_path', type=str, default='data/annotations/captions_train2014.json', help='path for train annotation json file')
     parser.add_argument('--log_step', type=int , default=10, help='step size for prining log info')
+    parser.add_argument('--max_len', type=int, default=100, help='max length of decoded sentence')
     
     # Model parameters
     parser.add_argument('--hidden_size', type=int , default=768, help='dimension of lstm hidden states')
