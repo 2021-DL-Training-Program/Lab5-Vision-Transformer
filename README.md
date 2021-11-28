@@ -32,12 +32,18 @@ python3 resize.py
 python3 build_vocab.py
 ```
 
-Train Image Captioning
+4. Install transformers
+
+```
+pip3 install transformers
+```
+
+5. Train Image Captioning
 ```
 python3 captioning.py
 ```
 
-Sample an image for testing
+6. Sample an image for testing
 ```
 python3 sample.py --image_path <any image path>
 python3 sample.py --image_path ./data/train2014/COCO_train2014_000000581921.jpg
