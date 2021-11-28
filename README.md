@@ -6,6 +6,15 @@ Later, [An Image is Worth 16x16 Words: Transformers for Image Recognition at Sca
 For this task, we use a pretrained ```google/vit-base-patch16-224``` pretrained ViT as encoder, and a Transformer Decoder.
 
 
+A standard Transformer Block <br>
+<img src="./img/Transformer.png" alt="transformer" width="400"/>
+___
+Vision Transformer ViT <br>
+<img src="./img/ViT.png" alt="ViT" width="500"/>
+___
+
+
+
 Please skip 1~3 if you have already finished Lab3 (using the same dataset).
 
 1. To down load the MSCOCO dataset:
