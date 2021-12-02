@@ -24,9 +24,10 @@ def plot_attention(image, result, attention_plot):
         ax.set_title(result[i], fontsize=12)
         img = ax.imshow(temp_image)
         ax.imshow(temp_att, cmap='gray', alpha=0.6, extent=img.get_extent())
-    plt.savefig('test.png')
-#     plt.tight_layout()
-#     plt.show()
+    
+    # plt.tight_layout()
+    plt.show()
+    plt.savefig('output.png')
 
 def sample_image(image_path):
     
