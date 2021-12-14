@@ -48,3 +48,8 @@ python3 captioning.py
 python3 sample.py --image_path <any image path>
 python3 sample.py --image_path ./data/train2014/COCO_train2014_000000581921.jpg
 ```
+
+
+## Additional Resources
+* ViT_example.py
+    This code shows how to implement standard ViT from scratch.
