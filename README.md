@@ -17,6 +17,8 @@ ___
 
 Please skip 1~3 if you have already finished Lab3 (using the same dataset).
 
+**Please copy the full data folder from Lab3, and start with step 4 (You should have done step 1~3 in Lab3)**
+
 1. To down load the MSCOCO dataset:
 ```
 sh download.sh
