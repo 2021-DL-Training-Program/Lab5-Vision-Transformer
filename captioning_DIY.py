@@ -14,6 +14,24 @@ from build_vocab import Vocabulary
 from tqdm import tqdm
 import argparse
 
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, d_model, dropout=0.1, max_len=5000):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        x = x + self.pe[:x.size(0), :]
+        return self.dropout(x)
+
 class Encoder(nn.Module):
     def __init__(self):
         super().__init__()
@@ -59,6 +77,9 @@ class MultiHeadAttentionLayer(nn.Module):
             #Q = [batch size, query len, hid dim]
             #K = [batch size, key len, hid dim]
             #V = [batch size, value len, hid dim]
+            e.g. 
+                Q = self.fc_q(query) (batch_size, query len, hid dim)
+                ....
         """
                 
         """
@@ -67,18 +88,24 @@ class MultiHeadAttentionLayer(nn.Module):
             #Q = [batch size, n heads, query len, head dim]
             #K = [batch size, n heads, key len, head dim]
             #V = [batch size, n heads, value len, head dim]
+            e.g. 
+                Q = torch.reshape(Q, (batch_size, self.n_heads, Q.size(1), self.head_dim))
+                ...
         """
                 
         """
         ToDo: Compute Attention Weight for each head (We named it as energy but you can call it whatever you want)
         energy = [batch size, n heads, query len, key len]
+        hint: remember to divide energy with self.scale
+        e.g.
+            energy = torch.matmul(???, K.permute(?, ?, ?, ?)) ???
         """
         
         """
         ToDo: Mask unused tokens with variable: mask
         hint: you should the attention weight of mask unused tokens to -inf (or you can mask it with a very negative number like: -1e10)
         if mask is not None:
-            energy = .....
+            energy = energy.masked_fill(mask == ???, ???)
         """
         
         """
@@ -88,15 +115,17 @@ class MultiHeadAttentionLayer(nn.Module):
         #attention = [batch size, n heads, query len, key len]
         # x = ..... (x is the weight sum of V)
         #x = [batch size, n heads, query len, head dim]
+
+        attention = torch.softmax(???, dim = -1)
+        x = torch.matmul(???, ???)
         """
         
-        
         """
-        We wrote these line for you, but to contatenate separated heads together. 
+        We wrote these lines for you, contatenating separated heads together and output.
+        You only need to finish the above parts (+ DecoderLayer class)  
         """
         x = x.permute(0, 2, 1, 3).contiguous()
         x = x.view(batch_size, -1, self.hid_dim)
-        
         #x = [batch size, query len, hid dim]
         
         x = self.fc_o(x)
@@ -126,6 +155,7 @@ class Decoder(nn.Module):
         
         self.tok_embedding = nn.Embedding(output_dim, hid_dim)
         self.pos_embedding = nn.Embedding(max_length, hid_dim)
+        # self.pos_encoding = PositionalEncoding(hid_dim, max_length)
         
         self.layers = nn.ModuleList([DecoderLayer(hid_dim, n_heads, pf_dim, dropout, device) for _ in range(n_layers)])
         
@@ -178,9 +208,9 @@ class DecoderLayer(nn.Module):
         
         """
         ToDo: 
-        1. Call your implemented multi-head attention for self-attention (self.self_attention) & Layer Norm
-        2. Cross attention with encoder output & layer norm
-        3. positionwise feed forward & layer norm
+            1. Call your implemented multi-head attention for self-attention (self.self_attention) & Layer Norm
+            2. Cross attention with encoder output & layer norm
+            3. positionwise feed forward & layer norm
         Hint: you can refer transformer block image in README.md
         don't forget the residual connection~~
         """
