@@ -189,30 +189,20 @@ def test(model, test_loader, device, epoch, log_freq=10):
     return total_loss/total_step, total_correct/total_sample
 
 def get_dataloader(batch_size):
-    transform = transforms.Compose([
-        transforms.Resize([256, 256]),
-        transforms.RandomCrop(256, padding=4),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomGrayscale(p=0.2),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-        ])
-
-    transform_test = transforms.Compose([
-        transforms.Resize([256, 256]),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-    ])
-
-    trainset = torchvision.datasets.Places365(root='./data_256_standard ', small=True ,
+    transform = transforms.Compose(
+        [transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    batch_size = 4
+    
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
                                             download=True, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                            shuffle=True, num_workers=0)
+                                            shuffle=True, num_workers=2)
 
-    testset = torchvision.datasets.Places365(root='./data_256_standard', split='val', small=True,
-                                        download=True, transform=transform_test)
+    testset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                        download=True, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                            shuffle=False, num_workers=0)
+                                            shuffle=False, num_workers=2)
 
     return trainloader, testloader
 
