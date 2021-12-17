@@ -45,9 +45,9 @@ python3 build_vocab.py
 pip3 install transformers
 ```
 
-```
-Finish captioning_DIY.py
-```
+
+**Finish captioning_DIY.py**
+
 
 5. Train Image Captioning
 ```
