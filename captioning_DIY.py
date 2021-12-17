@@ -73,7 +73,7 @@ class MultiHeadAttentionLayer(nn.Module):
         #value = [batch size, value len, hid dim]
                 
         """
-        ToDo: Encode you Q, K, V
+        ToDo: Encode your Q, K, V
             #Q = [batch size, query len, hid dim]
             #K = [batch size, key len, hid dim]
             #V = [batch size, value len, hid dim]
@@ -102,21 +102,19 @@ class MultiHeadAttentionLayer(nn.Module):
         """
         
         """
-        ToDo: Mask unused tokens with variable: mask
+        ToDo: Mask unused tokens with variable: mask and Normalize attention weight
         hint: you should the attention weight of mask unused tokens to -inf (or you can mask it with a very negative number like: -1e10)
+        hint: softmax function 
+        #attention = [batch size, n heads, query len, key len]
         if mask is not None:
             energy = energy.masked_fill(mask == ???, ???)
+        attention = ????(???, dim = -1) # apply softmax on energy
         """
         
         """
-        ToDo: Normalize attention weight and multiply attention weight to V
-        hint: Using torch.softmax
-        # attention = .....
-        #attention = [batch size, n heads, query len, key len]
-        # x = ..... (x is the weight sum of V)
+        ToDo:  multiply attention weight to V
+        # x = ..... (x is the weighted sum of V)
         #x = [batch size, n heads, query len, head dim]
-
-        attention = torch.softmax(???, dim = -1)
         x = torch.matmul(???, ???)
         """
         
@@ -386,7 +384,7 @@ if __name__ == '__main__':
     parser.add_argument('--clip', type=int, default=1, help='gradient clipping value')
     
     parser.add_argument('--num_epochs', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--num_workers', type=int, default=2)
     parser.add_argument('--learning_rate', type=float, default=3e-5)
     args = parser.parse_args()

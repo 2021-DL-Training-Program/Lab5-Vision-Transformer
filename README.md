@@ -14,10 +14,9 @@ Vision Transformer ViT <br>
 ___
 
 
-
 Please skip 1~3 if you have already finished Lab3 (using the same dataset).
 
-**Please copy the full data folder from Lab3, and start with step 4 (You should have done step 1~3 in Lab3)**
+**Please copy the full data/ folder from Lab3 to your Lab5 folder, and start with step 4 (You should have done step 1~3 in Lab3)**
 
 1. To down load the MSCOCO dataset:
 ```
@@ -42,7 +41,7 @@ pip3 install transformers
 
 5. Train Image Captioning
 ```
-python3 captioning.py
+python3 captioning_DIY.py
 ```
 
 6. Sample an image for testing
@@ -54,4 +53,4 @@ python3 sample.py --image_path ./data/train2014/COCO_train2014_000000581921.jpg
 
 ## Additional Resources
 * ViT_example.py
-    This code shows how to implement standard ViT from scratch.
+    This code shows how to implement a standard ViT from scratch.
