@@ -13,6 +13,12 @@ Vision Transformer ViT <br>
 <img src="./img/ViT.png" alt="ViT" width="500"/>
 ___
 
+You can download the pretrained ViT model via this (link)[https://drive.google.com/file/d/1VNbrIE9oFu12QnS_vQAti4r6bIMUBZsB/view?usp=sharing]
+unzip downloaded google.zip
+
+```
+unzip google.zip
+```
 
 Please skip 1~3 if you have already finished Lab3 (using the same dataset).
 
@@ -37,6 +43,10 @@ python3 build_vocab.py
 
 ```
 pip3 install transformers
+```
+
+```
+Finish captioning_DIY.py
 ```
 
 5. Train Image Captioning
