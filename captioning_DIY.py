@@ -290,7 +290,7 @@ def train(model, iterator, optimizer, criterion, clip, log_step=10):
         
         epoch_loss += loss.item()
         
-        if i+1 % log_step == 0:
+        if (i+1) % log_step == 0:
             p_bar.set_description(f'STEP {i+1} | Loss: {(epoch_loss/(i+1)):.3f} | Train PPL: {math.exp(epoch_loss/(i+1)):7.3f}')
         
     return epoch_loss / len(iterator)
