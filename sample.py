@@ -74,6 +74,7 @@ def main(args):
             break
 
     decoded_sent = [vocab.idx2word[i] for i in trg_indexes]
+    print('Predicted Caption:', decoded_sent)
     plot_attention(raw_image, decoded_sent, attention)
 
 if __name__ == '__main__':

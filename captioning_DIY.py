@@ -81,7 +81,7 @@ class MultiHeadAttentionLayer(nn.Module):
                 Q = self.fc_q(query) (batch_size, query len, hid dim)
                 ....
         """
-                
+
         """
         ToDo: Separate dimensions for each attention-head
         Result:
@@ -89,10 +89,10 @@ class MultiHeadAttentionLayer(nn.Module):
             #K = [batch size, n heads, key len, head dim]
             #V = [batch size, n heads, value len, head dim]
             e.g. 
-                Q = torch.reshape(Q, (batch_size, self.n_heads, Q.size(1), self.head_dim))
+                Q = Q.view(batch_size, -1, self.n_heads, self.head_dim).permute(?,?,?,?)
                 ...
         """
-                
+
         """
         ToDo: Compute Attention Weight for each head (We named it as energy but you can call it whatever you want)
         energy = [batch size, n heads, query len, key len]
@@ -211,9 +211,19 @@ class DecoderLayer(nn.Module):
             3. positionwise feed forward & layer norm
         Hint: you can refer transformer block image in README.md
         don't forget the residual connection~~
+
+        _trg, _ = self.self_attention(???, ???, ???, ???)
+        trg = self.self_attn_layer_norm( ??? + _trg ) # residual and layernorm
+
+        _trg, attention = self.encoder_attention(???, ???, ???, ???)
+        trg = self.enc_attn_layer_norm( ??? + ???) 
+
+        _trg = self.positionwise_feedforward(trg)
+        trg = self.ff_layer_norm(??? + ???)
+
         """
         
-        return trg, attention
+        return out, attention
 
 class Img2Seq(nn.Module):
     def __init__(self, encoder, decoder, trg_pad_idx, device):
